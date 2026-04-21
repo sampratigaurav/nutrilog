@@ -1,0 +1,68 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import DashboardClient from '@/components/DashboardClient'
+
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const today = new Date().toISOString().split('T')[0]
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('*')
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!profile) redirect('/login')
+
+  // Today's logs
+  const { data: todayLogs } = await supabase
+    .from('diet_logs')
+    .select('*, food_log_items(*), diet_log_items(*, recipes(name))')
+    .eq('user_id', profile.user_id)
+    .eq('log_date', today)
+    .order('meal_type')
+
+  // Weekly totals (last 7 days)
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
+  const { data: weeklyLogs } = await supabase
+    .from('diet_logs')
+    .select('log_date, total_calories, total_protein_g, total_carbs_g, total_fat_g')
+    .eq('user_id', profile.user_id)
+    .gte('log_date', sevenDaysAgo)
+    .order('log_date')
+
+  // Active goal
+  const { data: activeGoal } = await supabase
+    .from('nutritional_goals')
+    .select('*')
+    .eq('user_id', profile.user_id)
+    .lte('start_date', today)
+    .or(`end_date.is.null,end_date.gte.${today}`)
+    .order('start_date', { ascending: false })
+    .limit(1)
+    .single()
+
+  const totals = (todayLogs ?? []).reduce(
+    (acc, log) => ({
+      calories: acc.calories + Number(log.total_calories),
+      protein:  acc.protein  + Number(log.total_protein_g),
+      carbs:    acc.carbs    + Number(log.total_carbs_g),
+      fat:      acc.fat      + Number(log.total_fat_g),
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+  )
+
+  return (
+    <DashboardClient
+      profile={profile}
+      todayLogs={todayLogs ?? []}
+      weeklyLogs={weeklyLogs ?? []}
+      activeGoal={activeGoal ?? null}
+      todayTotals={totals}
+      today={today}
+    />
+  )
+}
