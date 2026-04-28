@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import NavBar from '@/components/NavBar'
 import DashboardClient from '@/components/DashboardClient'
 
-export default async function RootPage() {
+export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -41,19 +40,13 @@ export default async function RootPage() {
   )
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <NavBar userName={profile.name ?? 'User'} />
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6">
-        <DashboardClient
-          profile={profile}
-          todayLogs={todayLogs ?? []}
-          weeklyLogs={weeklyLogs ?? []}
-          activeGoal={activeGoal ?? null}
-          todayTotals={totals}
-          today={today}
-        />
-      </main>
-    </div>
+    <DashboardClient
+      profile={profile}
+      todayLogs={todayLogs ?? []}
+      weeklyLogs={weeklyLogs ?? []}
+      activeGoal={activeGoal ?? null}
+      todayTotals={totals}
+      today={today}
+    />
   )
 }
-

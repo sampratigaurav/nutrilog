@@ -5,7 +5,14 @@ import NavBar from '@/components/NavBar'
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+
+  // (dashboard)/page.tsx lives at "/" and renders the public landing page.
+  // When no user is present we skip the auth wrapper so the landing page
+  // renders without dashboard chrome.  The proxy handles auth redirects for
+  // any *other* protected route before the layout even runs.
+  if (!user) {
+    return <>{children}</>
+  }
 
   const { data: profile } = await supabase
     .from('users')
