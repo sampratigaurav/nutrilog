@@ -21,9 +21,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .single()
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <NavBar userName={profile?.name ?? 'User'} />
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6">
+      <main style={{ flex: 1 }}>
         {children}
       </main>
     </div>

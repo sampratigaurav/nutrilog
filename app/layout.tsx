@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="h-full" suppressHydrationWarning>
-      <body className={`${geist.variable} ${fraunces.variable} ${dmSans.variable} ${jetbrainsMono.variable} ${tiroDevanagari.variable} h-full bg-gray-50 text-gray-900 antialiased`}>
+      <body className={`${geist.variable} ${fraunces.variable} ${dmSans.variable} ${jetbrainsMono.variable} ${tiroDevanagari.variable} h-full antialiased`} style={{ background: '#f5efe4', color: '#1a1a2e' }}>
         {children}
       </body>
     </html>
